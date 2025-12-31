@@ -13,7 +13,6 @@ const getAllPosts = async () =>{
     return result;
 }
 
-
 export const postService = {
     createPost,
     getAllPosts
