@@ -11,7 +11,7 @@ app.all("/api/auth/{*any}", toNodeHandler(auth));
 app.use(express.json());
 app.use(cors({
     origin: process.env.APP_URL || "http://localhost:4000",
-
+    credentials: true
 }))
 
 //* routes

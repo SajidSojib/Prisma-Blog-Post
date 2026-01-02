@@ -21,8 +21,12 @@ const createPost = async (req: Request, res: Response) => {
 
 const getAllPosts = async (req: Request, res: Response) => {
   try {
-    const result = await postService.getAllPosts();
+    const {search} = req.query;
+    const searchString = (typeof search === "string") ? search : undefined;
+    const tagsQuerty = req.query.tags ? (req.query.tags as string).split(",") : [];
+    const result = await postService.getAllPosts(searchString, tagsQuerty);
     res.status(200).json(result);
+
   } catch (error) {
     res.status(400).json({ 
         error: "Get all posts failed", 
