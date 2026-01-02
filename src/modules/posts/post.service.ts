@@ -12,8 +12,13 @@ const createPost = async (data: Omit<Post, "id" | "createdAt" | "updatedAt" | "a
     return result;
 }
 
-const getAllPosts = async (search: string | undefined, tagsQuerty: string[]) =>{
+const getAllPosts = async (search: string | undefined, tagsQuerty: string[], isFeatured?: boolean|undefined) =>{
     const addConditions: PostWhereInput[] = [];
+    if(typeof isFeatured === "boolean"){
+        addConditions.push({
+            isFeatured: isFeatured
+        })
+    }
     if(tagsQuerty.length > 0){
         addConditions.push({
             tags: {
