@@ -46,6 +46,9 @@ const getAllPosts = async (req: Request, res: Response) => {
     const page = Number(req.query.page ?? 1);
     const limit = Number(req.query.limit ?? 10);
 
+    const sortBy = req.query.sortBy as string|undefined;
+    const sortOrder = req.query.sortOrder as "asc" | "desc" | undefined;
+
     const result = await postService.getAllPosts(
       searchString,
       tagsQuerty,
@@ -53,7 +56,9 @@ const getAllPosts = async (req: Request, res: Response) => {
       status,
       authorId,
       page,
-      limit
+      limit,
+      sortBy,
+      sortOrder
     );
     res.status(200).json(result);
   } catch (error) {

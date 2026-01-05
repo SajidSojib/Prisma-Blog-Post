@@ -22,7 +22,9 @@ const getAllPosts = async (
   status?: PostStatus | undefined,
   authorId?: string | undefined,
   page: number = 1,
-  limit: number = 10
+  limit: number = 10,
+  sortBy?: string | undefined,
+  sortOrder?: "asc" | "desc" | undefined
 ) => {
   const addConditions: PostWhereInput[] = [];
 
@@ -77,6 +79,9 @@ const getAllPosts = async (
     where: {
       AND: addConditions,
     },
+    orderBy: sortBy && sortOrder ? {
+      [sortBy]: sortOrder
+    }:{ createdAt: "desc" }
   });
   return result;
 };
