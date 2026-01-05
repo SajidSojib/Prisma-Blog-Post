@@ -72,6 +72,7 @@ const getAllPosts = async (
       ],
     });
   }
+
   const result = await prisma.post.findMany({
     skip,
     take,
@@ -80,7 +81,21 @@ const getAllPosts = async (
     },
     orderBy
   });
-  return result;
+  const total = await prisma.post.count({
+    where: {
+      AND: addConditions,
+    },
+  })
+
+  return {
+    data: result,
+    pegination: {
+      total,
+      limit: take,
+      page: skip / take + 1,
+      totalPages: Math.ceil(total / take),
+    }
+  };
 };
 
 export const postService = {
