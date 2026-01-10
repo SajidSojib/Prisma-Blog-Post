@@ -92,10 +92,25 @@ const deleteComment = async (commentId: string, authorId: string) => {
   });
 };
 
+const moderateComment = async (id: string, data: {status: CommentStatus}) => {
+  const commentData = await prisma.comment.findUniqueOrThrow({
+    where: {id},
+    select: { id: true, status: true}
+  })
+  if(commentData.status === data.status){
+    throw new Error(`Comment is already set to ${data.status}`)
+  }
+  return await prisma.comment.update({
+    where: {id},
+    data
+  })
+}
+
 export const commentServices = {
     createComment,
     getCommentById,
     getCommentByAuthorId,
     updateComment,
-    deleteComment
+    deleteComment,
+    moderateComment
 }
