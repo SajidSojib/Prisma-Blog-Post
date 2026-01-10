@@ -1,4 +1,8 @@
-import { Post, PostStatus } from "../../../generated/prisma/client";
+import {
+  CommentStatus,
+  Post,
+  PostStatus,
+} from "../../../generated/prisma/client";
 import { PostWhereInput } from "../../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
 
@@ -79,13 +83,13 @@ const getAllPosts = async (
     where: {
       AND: addConditions,
     },
-    orderBy
+    orderBy,
   });
   const total = await prisma.post.count({
     where: {
       AND: addConditions,
     },
-  })
+  });
 
   return {
     data: result,
@@ -94,12 +98,12 @@ const getAllPosts = async (
       limit: take,
       page: skip / take + 1,
       totalPages: Math.ceil(total / take),
-    }
+    },
   };
 };
 
 const getPostById = async (id: string) => {
-  const result = await prisma.$transaction( async (tx) =>{
+  const result = await prisma.$transaction(async (tx) => {
     await tx.post.update({
       where: {
         id,
@@ -114,10 +118,32 @@ const getPostById = async (id: string) => {
       where: {
         id,
       },
+      include: {
+        comments: {
+          where: {
+            parentId: null,
+            status: CommentStatus.APPROVED,
+          },
+          include: {
+            replies: {
+              where: {
+                status: CommentStatus.APPROVED,
+              },
+              include: {
+                replies: {
+                  where: {
+                    status: CommentStatus.APPROVED,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
 
     return postData;
-  })
+  });
   return result;
 };
 
