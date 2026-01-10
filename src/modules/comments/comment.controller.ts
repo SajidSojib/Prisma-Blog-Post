@@ -8,7 +8,7 @@ const createComment = async (req: Request, res: Response) => {
         message: "You are not authorized",
       });
     }
-    req.body.authorId = req.user.id as string
+    req.body.authorId = req.user.id as string;
     const result = await commentServices.createComment(req.body);
     return res.status(201).json(result);
   } catch (error) {
@@ -35,7 +35,9 @@ const getCommentById = async (req: Request, res: Response) => {
 const getCommentByAuthorId = async (req: Request, res: Response) => {
   try {
     const { authorId } = req.params;
-    const result = await commentServices.getCommentByAuthorId(authorId as string);
+    const result = await commentServices.getCommentByAuthorId(
+      authorId as string
+    );
     res.status(200).json(result);
   } catch (error) {
     res.status(400).json({
@@ -45,10 +47,36 @@ const getCommentByAuthorId = async (req: Request, res: Response) => {
   }
 };
 
+const updateComment = async (req: Request, res: Response) => {
+  try {
+    const { commentId } = req.params;
+    const authorId =
+      req.user?.role === "ADMIN"
+        ? req.body.authorId
+          ? req.body.authorId
+          : req.user?.id
+        : req.user?.id;
+    const result = await commentServices.updateComment(
+      commentId as string,
+      req.body,
+      authorId as string
+    );
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(400).json({
+      error: "Update comment failed",
+      details: error,
+    });
+  }
+};
+
 const deleteComment = async (req: Request, res: Response) => {
   try {
     const { commentId } = req.params;
-    const result = await commentServices.deleteComment(commentId as string, req.user?.id as string);
+    const result = await commentServices.deleteComment(
+      commentId as string,
+      req.user?.id as string
+    );
     res.status(200).json(result);
   } catch (error) {
     res.status(400).json({
@@ -62,5 +90,6 @@ export const commentController = {
   createComment,
   getCommentById,
   getCommentByAuthorId,
-  deleteComment
+  updateComment,
+  deleteComment,
 };

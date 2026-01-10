@@ -1,4 +1,4 @@
-import { Comment } from "../../../generated/prisma/client";
+import { Comment, CommentStatus } from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
 
 const createComment = async (payload: {
@@ -56,6 +56,21 @@ const getCommentByAuthorId = async (id: string) => {
   });
 };
 
+const updateComment = async (id: string, data: { content?: string, status?: CommentStatus}, authorId: string) => {
+  const commentData = await prisma.comment.findUnique({
+    where: {
+      id, authorId
+    }
+  })
+  if (!commentData) {
+    throw new Error("Comment not found");
+  }
+  return await prisma.comment.update({
+    where: { id, authorId },
+    data,
+  });
+}
+
 const deleteComment = async (commentId: string, authorId: string) => {
   const commentData = await prisma.comment.findUnique({
     where: {
@@ -81,5 +96,6 @@ export const commentServices = {
     createComment,
     getCommentById,
     getCommentByAuthorId,
+    updateComment,
     deleteComment
 }
