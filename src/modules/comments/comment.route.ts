@@ -8,5 +8,6 @@ const router = Router();
 router.post("/", auth(userRole.USER, userRole.ADMIN), commentController.createComment);
 router.get("/author/:authorId", commentController.getCommentByAuthorId);
 router.get("/:commentId", commentController.getCommentById);
+router.delete("/:commentId", auth(userRole.USER, userRole.ADMIN), commentController.deleteComment);
 
 export const commentRouter:Router = router;
