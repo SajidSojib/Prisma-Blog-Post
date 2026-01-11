@@ -220,9 +220,34 @@ const getMyPosts = async (userId: string) => {
   };
 };
 
+
+const updatePost = async (postId: string, data: Partial<Post>, userId: string) => {
+  const postData = await prisma.post.findUniqueOrThrow({
+    where: {
+      id: postId
+    },
+    select: {
+      authorId: true
+    }
+  })
+
+  if(postData.authorId !== userId){
+    throw new Error("You are not authorized to update this post")
+  }
+  return await prisma.post.update({
+    where: {
+      id: postId
+    },
+    data
+  })
+};
+
+
+
 export const postService = {
   createPost,
   getAllPosts,
   getPostById,
-  getMyPosts
+  getMyPosts,
+  updatePost
 };

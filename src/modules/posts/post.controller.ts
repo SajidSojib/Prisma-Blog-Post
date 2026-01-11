@@ -102,11 +102,26 @@ const getMyPosts = async (req: Request, res: Response) => {
   }
 }
 
+const updatePost = async (req: Request, res: Response) => {
+  try {
+    const { postId } = req.params;
+    const result = await postService.updatePost(postId as string, req.body, req.user?.id as string);
+    res.status(200).json(result);
+  } catch (error) {
+    const errorMessage = (error instanceof Error) ? error.message : "Update post failed";
+    res.status(400).json({
+      error: errorMessage || "Update post failed",
+      details: error,
+    });
+  }
+};
+
 const postController = {
   createPost,
   getAllPosts,
   getPostById,
-  getMyPosts
+  getMyPosts,
+  updatePost
 };
 
 export default postController;
