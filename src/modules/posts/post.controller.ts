@@ -105,7 +105,8 @@ const getMyPosts = async (req: Request, res: Response) => {
 const updatePost = async (req: Request, res: Response) => {
   try {
     const { postId } = req.params;
-    const result = await postService.updatePost(postId as string, req.body, req.user?.id as string);
+    const isAdmin = req.user?.role === "ADMIN";
+    const result = await postService.updatePost(postId as string, req.body, req.user?.id as string, isAdmin);
     res.status(200).json(result);
   } catch (error) {
     const errorMessage = (error instanceof Error) ? error.message : "Update post failed";
