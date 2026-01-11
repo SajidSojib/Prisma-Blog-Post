@@ -84,10 +84,29 @@ const getPostById = async (req: Request, res: Response) => {
   }
 };
 
+const getMyPosts = async (req: Request, res: Response) => {
+  try {
+    if (!req.user?.id) {
+      return res.status(401).json({
+        success: false,
+        message: "You are not authorized",
+      });
+    }
+    const result = await postService.getMyPosts(req.user.id as string);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(400).json({
+      error: "Get my posts failed",
+      details: error,
+    });
+  }
+}
+
 const postController = {
   createPost,
   getAllPosts,
-  getPostById
+  getPostById,
+  getMyPosts
 };
 
 export default postController;

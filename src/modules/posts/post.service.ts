@@ -172,8 +172,57 @@ const getPostById = async (id: string) => {
   return result;
 };
 
+const getMyPosts = async (userId: string) => {
+  await prisma.user.findUniqueOrThrow({
+    where: {
+      id: userId,
+      status: true
+    },
+    select: {
+      id: true
+    }
+  })
+  const result = await prisma.post.findMany({
+    where: {
+      authorId: userId,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      _count: {
+        select: {
+          comments: true,
+        },
+      }
+    },
+  });
+
+  // const total = await prisma.post.count({
+  //   where: {
+  //     authorId: userId,
+  //   },
+  // })
+  const total = await prisma.post.aggregate({
+    _count: {
+      id: true
+    },
+    _avg: {
+      views: true
+    },
+    where: {
+      authorId: userId
+    }
+  })
+  return {
+    data: result,
+    total
+  };
+};
+
 export const postService = {
   createPost,
   getAllPosts,
   getPostById,
+  getMyPosts
 };
