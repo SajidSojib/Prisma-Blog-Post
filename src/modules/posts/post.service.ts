@@ -89,7 +89,7 @@ const getAllPosts = async (
         select: {
           comments: true,
         },
-      }
+      },
     },
   });
   const total = await prisma.post.count({
@@ -163,7 +163,7 @@ const getPostById = async (id: string) => {
               },
             },
           },
-        }
+        },
       },
     });
 
@@ -176,12 +176,12 @@ const getMyPosts = async (userId: string) => {
   await prisma.user.findUniqueOrThrow({
     where: {
       id: userId,
-      status: true
+      status: true,
     },
     select: {
-      id: true
-    }
-  })
+      id: true,
+    },
+  });
   const result = await prisma.post.findMany({
     where: {
       authorId: userId,
@@ -194,7 +194,7 @@ const getMyPosts = async (userId: string) => {
         select: {
           comments: true,
         },
-      }
+      },
     },
   });
 
@@ -205,68 +205,122 @@ const getMyPosts = async (userId: string) => {
   // })
   const total = await prisma.post.aggregate({
     _count: {
-      id: true
+      id: true,
     },
     _avg: {
-      views: true
+      views: true,
     },
     where: {
-      authorId: userId
-    }
-  })
+      authorId: userId,
+    },
+  });
   return {
     data: result,
-    total
+    total,
   };
 };
 
-
-const updatePost = async (postId: string, data: Partial<Post>, userId: string, isAdmin: boolean) => {
+const updatePost = async (
+  postId: string,
+  data: Partial<Post>,
+  userId: string,
+  isAdmin: boolean
+) => {
   const postData = await prisma.post.findUniqueOrThrow({
     where: {
-      id: postId
+      id: postId,
     },
     select: {
-      authorId: true
-    }
-  })
+      authorId: true,
+    },
+  });
 
-  if(!isAdmin && (postData.authorId !== userId)){
-    throw new Error("You are not authorized to update this post")
+  if (!isAdmin && postData.authorId !== userId) {
+    throw new Error("You are not authorized to update this post");
   }
-  if(!isAdmin){
-    delete data.isFeatured
+  if (!isAdmin) {
+    delete data.isFeatured;
   }
 
   return await prisma.post.update({
     where: {
-      id: postId
+      id: postId,
     },
-    data
-  })
+    data,
+  });
 };
-
 
 const deletePost = async (postId: string, userId: string, isAdmin: boolean) => {
   const postData = await prisma.post.findUniqueOrThrow({
     where: {
-      id: postId
+      id: postId,
     },
     select: {
-      authorId: true
-    }
-  })
+      authorId: true,
+    },
+  });
 
-  if(!isAdmin && (postData.authorId !== userId)){
-    throw new Error("You are not authorized to delete this post")
+  if (!isAdmin && postData.authorId !== userId) {
+    throw new Error("You are not authorized to delete this post");
   }
   return await prisma.post.delete({
     where: {
-      id: postId
-    }
-  })
+      id: postId,
+    },
+  });
 };
 
+const getStats = async () => {
+  return await prisma.$transaction(async (tx) => {
+    const [
+      totalPosts,
+      publishedPosts,
+      draftPosts,
+      archivePosts,
+      totalComments,
+      approvedComments,
+      totalUsers,
+      adminCount,
+      userCount,
+      totalViews,
+      avgViews,
+    ] = await Promise.all([
+      await tx.post.count(),
+      await tx.post.count({where: {status: PostStatus.PUBLISHED}}),
+      await tx.post.count({where: {status: PostStatus.DRAFT}}),
+      await tx.post.count({where: {status: PostStatus.ARCHIVE}}),
+      await tx.comment.count(),
+      await tx.comment.count({where: {status: CommentStatus.APPROVED}}),
+      await tx.user.count(),
+      await tx.user.count({where: {role: "ADMIN"}}),
+      await tx.user.count({where: {role: "USER"}}),
+      await tx.post.aggregate({
+        _sum: {
+          views: true,
+        },
+      }),
+      await tx.post.aggregate({
+        _avg: {
+          views: true,
+        },
+      }),
+    ]);
+
+    return {
+      totalPosts,
+      publishedPosts,
+      draftPosts,
+      archivePosts,
+      totalComments,
+      approvedComments,
+      totalUsers,
+      adminCount,
+      userCount,
+      totalViews: totalViews._sum.views || 0,
+      avgViews: avgViews._avg.views || 0,
+    };
+  });
+};
 
 export const postService = {
   createPost,
@@ -274,5 +328,6 @@ export const postService = {
   getPostById,
   getMyPosts,
   updatePost,
-  deletePost
+  deletePost,
+  getStats
 };
