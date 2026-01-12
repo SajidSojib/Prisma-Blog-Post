@@ -22,6 +22,9 @@ export const auth = betterAuth({
     provider: "postgresql", // or "mysql", "postgresql", ...etc
   }),
   trustedOrigins: [process.env.APP_URL!],
+  advanced:{
+    cookiePrefix: "Prisma-Blog"
+  },
   user: {
     additionalFields: {
       role: {
@@ -191,6 +194,7 @@ export const auth = betterAuth({
     twoFactor({
       otpOptions: {
         async sendOTP({ user, otp }, ctx) {
+          console.log({otp});
           await resend.emails.send({
             from: "Prisma Blog App <prisma@resend.dev>",
             to: user.email,
@@ -203,6 +207,7 @@ export const auth = betterAuth({
           });
         },
       },
+      
     }),
   ],
 });
