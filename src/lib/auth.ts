@@ -2,7 +2,11 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
 import nodemailer from "nodemailer";
+import { twoFactor } from "better-auth/plugins";
+import { Resend } from "resend";
 // If your Prisma file is located elsewhere, you can change the path
+
+const resend = new Resend(process.env.RESEND_API);
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -183,4 +187,22 @@ export const auth = betterAuth({
       redirectURI: `${process.env.APP_URL}/api/auth/callback/github`,
     },
   },
+  plugins: [
+    twoFactor({
+      otpOptions: {
+        async sendOTP({ user, otp }, ctx) {
+          await resend.emails.send({
+            from: "Prisma Blog App <prisma@resend.dev>",
+            to: user.email,
+            subject: "Two-factor authentication code",
+            html: `
+            <h1>Two-factor authentication code</h1>
+            <p>Use the following code to log in to your account: <b>${otp}</b></p>
+            `,
+            text: `Use the following code to log in to your account: ${otp}`,
+          });
+        },
+      },
+    }),
+  ],
 });
