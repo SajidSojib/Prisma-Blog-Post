@@ -1,5 +1,6 @@
 import { Comment, CommentStatus } from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
+import { ApiError } from "../../utils/apiError";
 
 const createComment = async (payload: {
   content: string;
@@ -63,7 +64,7 @@ const updateComment = async (id: string, data: { content?: string, status?: Comm
     }
   })
   if (!commentData) {
-    throw new Error("Comment not found");
+    throw new ApiError(404,"Comment not found");
   }
   return await prisma.comment.update({
     where: { id, authorId },
@@ -83,7 +84,7 @@ const deleteComment = async (commentId: string, authorId: string) => {
     }
   })
   if (!commentData) {
-    throw new Error("Comment not found");
+    throw new ApiError(404,"Comment not found");
   }
   return await prisma.comment.delete({
     where: {
@@ -98,7 +99,7 @@ const moderateComment = async (id: string, data: {status: CommentStatus}) => {
     select: { id: true, status: true}
   })
   if(commentData.status === data.status){
-    throw new Error(`Comment is already set to ${data.status}`)
+    throw new ApiError(400,`Comment is already set to ${data.status}`)
   }
   return await prisma.comment.update({
     where: {id},

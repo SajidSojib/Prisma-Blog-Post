@@ -1,4 +1,4 @@
-import { APIError } from "better-auth/api";
+// import { APIError } from "better-auth/api";
 import {
   CommentStatus,
   Post,
@@ -267,7 +267,7 @@ const deletePost = async (postId: string, userId: string, isAdmin: boolean) => {
   });
 
   if (!isAdmin && postData.authorId !== userId) {
-    throw new Error("You are not authorized to delete this post");
+    throw new ApiError(401,"You are not authorized to delete this post");
   }
   return await prisma.post.delete({
     where: {
