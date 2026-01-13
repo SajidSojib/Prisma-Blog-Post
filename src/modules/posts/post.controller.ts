@@ -2,9 +2,9 @@ import { Request, Response } from "express";
 import { postService } from "./post.service";
 import { PostStatus } from "../../../generated/prisma/enums";
 import peginationSortingHelper from "../../helpers/peginationSortingHelper";
+import asyncHandler from "../../utils/asyncHandler";
 
-const createPost = async (req: Request, res: Response) => {
-  try {
+const createPost = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user) {
       return res.status(401).json({
         success: false,
@@ -16,57 +16,43 @@ const createPost = async (req: Request, res: Response) => {
       req.user.id as string
     );
     return res.status(201).json(result);
-  } catch (error) {
-    return res.status(400).json({
-      error: "Post created failed",
-      details: error,
-    });
-  }
-};
+});
 
-const getAllPosts = async (req: Request, res: Response) => {
-  try {
-    const { search } = req.query;
-    const searchString = typeof search === "string" ? search : undefined;
+const getAllPosts = asyncHandler(async (req: Request, res: Response) => {
+  const { search } = req.query;
+  const searchString = typeof search === "string" ? search : undefined;
 
-    const tagsQuerty = req.query.tags
-      ? (req.query.tags as string).split(",")
-      : [];
+  const tagsQuerty = req.query.tags
+    ? (req.query.tags as string).split(",")
+    : [];
 
-    const isFeatured = req.query.isFeatured
-      ? req.query.isFeatured === "true"
-        ? true
-        : req.query.isFeatured === "false"
-        ? false
-        : undefined
-      : undefined;
+  const isFeatured = req.query.isFeatured
+    ? req.query.isFeatured === "true"
+      ? true
+      : req.query.isFeatured === "false"
+      ? false
+      : undefined
+    : undefined;
 
-    const status = req.query.status as PostStatus|undefined;
-    const authorId = req.query.authorId as string|undefined
+  const status = req.query.status as PostStatus | undefined;
+  const authorId = req.query.authorId as string | undefined;
 
-    const { skip, take, orderBy } =peginationSortingHelper(req.query);
+  const { skip, take, orderBy } = peginationSortingHelper(req.query);
 
-    const result = await postService.getAllPosts(
-      searchString,
-      tagsQuerty,
-      isFeatured,
-      status,
-      authorId,
-      skip,
-      take,
-      orderBy
-    );
-    res.status(200).json(result);
-  } catch (error) {
-    res.status(400).json({
-      error: "Get all posts failed",
-      details: error,
-    });
-  }
-};
+  const result = await postService.getAllPosts(
+    searchString,
+    tagsQuerty,
+    isFeatured,
+    status,
+    authorId,
+    skip,
+    take,
+    orderBy
+  );
+  res.status(200).json(result);
+});
 
-const getPostById = async (req: Request, res: Response) => {
-  try {
+const getPostById = asyncHandler(async (req: Request, res: Response) => {
     const { postId } = req.params;
     if(!postId){
       return res.status(400).json({
@@ -75,17 +61,9 @@ const getPostById = async (req: Request, res: Response) => {
     }
     const result = await postService.getPostById(postId);
     res.status(200).json(result);
+})
 
-  } catch (error) {
-    res.status(400).json({
-      error: "Get post by id failed",
-      details: error,
-    });
-  }
-};
-
-const getMyPosts = async (req: Request, res: Response) => {
-  try {
+const getMyPosts = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user?.id) {
       return res.status(401).json({
         success: false,
@@ -94,56 +72,36 @@ const getMyPosts = async (req: Request, res: Response) => {
     }
     const result = await postService.getMyPosts(req.user.id as string);
     res.status(200).json(result);
-  } catch (error) {
-    res.status(400).json({
-      error: "Get my posts failed",
-      details: error,
-    });
-  }
-}
+});
 
-const updatePost = async (req: Request, res: Response) => {
-  try {
+const updatePost = asyncHandler(async (req: Request, res: Response) => {
     const { postId } = req.params;
     const isAdmin = req.user?.role === "ADMIN";
-    const result = await postService.updatePost(postId as string, req.body, req.user?.id as string, isAdmin);
+    const result = await postService.updatePost(
+      postId as string,
+      req.body,
+      req.user?.id as string,
+      isAdmin
+    );
     res.status(200).json(result);
-  } catch (error) {
-    const errorMessage = (error instanceof Error) ? error.message : "Update post failed";
-    res.status(400).json({
-      error: errorMessage || "Update post failed",
-      details: error,
-    });
-  }
-};
+});
 
-const deletePost = async (req: Request, res: Response) => {
-  try {
+const deletePost = asyncHandler(async (req: Request, res: Response) => {
     const { postId } = req.params;
     const isAdmin = req.user?.role === "ADMIN";
-    const result = await postService.deletePost(postId as string, req.user?.id as string, isAdmin);
+    const result = await postService.deletePost(
+      postId as string,
+      req.user?.id as string,
+      isAdmin
+    );
     res.status(200).json(result);
-  } catch (error) {
-    const errorMessage = (error instanceof Error) ? error.message : "Delete post failed";
-    res.status(400).json({
-      error: errorMessage || "Delete post failed",
-      details: error,
-    });
-  }
-}
+});
 
 
-const getStats = async (req: Request, res: Response) => {
-  try {
+const getStats = asyncHandler(async (req: Request, res: Response) => {
     const result = await postService.getStats();
     res.status(200).json(result);
-  } catch (error) {
-    res.status(400).json({
-      error: "Get stats failed",
-      details: error,
-    });
-  }
-}
+});
 
 const postController = {
   createPost,

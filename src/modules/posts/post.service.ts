@@ -1,3 +1,4 @@
+import { APIError } from "better-auth/api";
 import {
   CommentStatus,
   Post,
@@ -5,6 +6,7 @@ import {
 } from "../../../generated/prisma/client";
 import { PostWhereInput } from "../../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
+import { ApiError } from "../../utils/apiError";
 
 const createPost = async (
   data: Omit<Post, "id" | "createdAt" | "updatedAt" | "authorId">,
@@ -172,6 +174,7 @@ const getPostById = async (id: string) => {
   return result;
 };
 
+
 const getMyPosts = async (userId: string) => {
   await prisma.user.findUniqueOrThrow({
     where: {
@@ -236,7 +239,10 @@ const updatePost = async (
   });
 
   if (!isAdmin && postData.authorId !== userId) {
-    throw new Error("You are not authorized to update this post");
+    throw new ApiError(401,"You are not authorized to update this post");
+    // throw new APIError(
+    //   "UNAUTHORIZED",{message:"You are not authorized to update this post"}
+    // );
   }
   if (!isAdmin) {
     delete data.isFeatured;
