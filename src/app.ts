@@ -5,6 +5,7 @@ import { auth } from "./lib/auth";
 import cors from "cors";
 import { commentRouter } from "./modules/comments/comment.route";
 import errorHandler from "./middlewires/globalErrorHandler";
+import notFound from "./middlewires/notFound";
 
 const app:Application = express();
 app.all("/api/auth/{*any}", toNodeHandler(auth));
@@ -25,7 +26,7 @@ app.use("/posts", postRouter);
 app.use("/comments", commentRouter);
 
 
-
+app.use(notFound);
 //* Error Handler
 app.use(errorHandler);
 
