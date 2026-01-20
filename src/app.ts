@@ -8,14 +8,15 @@ import errorHandler from "./middlewires/globalErrorHandler";
 import notFound from "./middlewires/notFound";
 
 const app:Application = express();
-app.all("/api/auth/{*any}", toNodeHandler(auth));
 
 //* middlewares
 app.use(express.json());
 app.use(cors({
-    origin: process.env.APP_URL || "http://localhost:4000",
+    origin: process.env.APP_URL || "http://localhost:3000",
     credentials: true
 }))
+
+app.all("/api/auth/{*any}", toNodeHandler(auth));
 
 //* routes
 app.get("/", (req, res) => {
